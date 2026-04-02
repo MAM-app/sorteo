@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 { color: #2d3436; margin-bottom: 15px; }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            font-size: 15px;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+        }
+        textarea:focus { border-color: #6c5ce7; }
+        .btn-sorteo {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s ease;
+        }
+        .btn-sorteo:hover { background: #5849c4; }
+        #resultado-box {
+            margin-top: 20px;
+            padding: 15px;
+            min-height: 40px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+        }
+        .animar {
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🎰 Sorteo Aleatorio</h2>
+    <textarea id="inputOpciones">Show Miki sol
+Show Cristian C
+Masaje de pies
+Baile
+Presentación de Jeff cavalier</textarea>
+    
+    <button class="btn-sorteo" onclick="lanzarSorteo()">¡PROBAR SUERTE!</button>
+    
+    <div id="resultado-box">Esperando...</div>
+</div>
+
+<script>
+    function lanzarSorteo() {
+        const area = document.getElementById('inputOpciones');
+        const res = document.getElementById('resultado-box');
+        const lista = area.value.split('\n').map(item => item.trim()).filter(item => item !== "");
+
+        if (lista.length === 0) {
+            res.innerHTML = "❌ Escribe algo";
+            res.style.color = "#ff7675";
+            return;
+        }
+
+        // Animación de carga
+        res.innerHTML = "Eligiendo...";
+        res.style.color = "#6c5ce7";
+        res.classList.add('animar');
+
+        setTimeout(() => {
+            const ganador = lista[Math.floor(Math.random() * lista.length)];
+            res.classList.remove('animar');
+            res.style.color = "#00b894";
+            res.innerHTML = "✨ " + ganador + " ✨";
+        }, 800);
+    }
+</script>
+
+</body>
+</html>
