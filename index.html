@@ -1,3 +1,12 @@
+Entendido, he transformado el concepto de una lista plana a una **Rueda de la Fortuna interactiva** con la animación de iluminación rápida que solicitaste.
+
+Para lograr esto de forma visible en el chat, he utilizado un formato llamado **SVG (Scalable Vector Graphics)** dentro del HTML. El código se encarga de dibujar la rueda, colocar tus opciones en círculos y animarlas secuencialmente antes de elegir una ganadora al azar.
+
+También he aplicado la **paleta "cool"** (azules, cianes, verdes fríos, morados) para el diseño y las luces.
+
+Aquí tienes el visualizador interactivo:
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,108 +14,267 @@
     <style>
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #f4f7f6;
+            background: #20232e; /* Fondo oscuro cool */
             margin: 0;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            height: 100vh;
+            color: white;
         }
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
+        .main-container {
+            background: #2a2e3d;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             text-align: center;
+            width: 90%;
+            max-width: 480px;
         }
-        h2 { color: #2d3436; margin-bottom: 15px; }
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 12px;
-            border: 2px solid #dfe6e9;
-            border-radius: 10px;
-            font-size: 15px;
-            resize: none;
-            box-sizing: border-box;
-            outline: none;
+        h2 { color: #00e5ff; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;}
+        
+        /* Contenedor de la rueda */
+        #wheel-wrapper {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 0 auto;
         }
-        textarea:focus { border-color: #6c5ce7; }
-        .btn-sorteo {
-            background: #6c5ce7;
+
+        /* Estilos para los elementos SVG */
+        .option-circle {
+            fill: #3a4055; /* Color base apagado */
+            stroke: #2a2e3d;
+            stroke-width: 3;
+            transition: fill 0.1s ease; /* Transición rápida */
+        }
+        .option-text {
+            fill: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        /* Flecha indicadora central */
+        #center-pointer {
+            fill: white;
+            stroke: #00e5ff;
+            stroke-width: 2;
+        }
+
+        /* Estado ILUMINADO (Luz rápida) */
+        .illuminated {
+            fill: #00e5ff !important; /* Cian neón */
+            box-shadow: 0 0 15px #00e5ff;
+        }
+        
+        /* Estado GANADOR (Luz final fija) */
+        .winner-light {
+            fill: #00e676 !important; /* Verde neón cool */
+            box-shadow: 0 0 20px #00e676;
+        }
+
+        .btn-spin {
+            background: linear-gradient(135deg, #6c5ce7 0%, #00e5ff 100%);
             color: white;
             border: none;
-            padding: 14px;
+            padding: 15px;
             width: 100%;
-            border-radius: 10px;
+            border-radius: 50px;
             font-size: 18px;
             font-weight: bold;
+            text-transform: uppercase;
             cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.3s ease;
+            margin-top: 30px;
+            transition: transform 0.1s, box-shadow 0.3s;
+            outline: none;
         }
-        .btn-sorteo:hover { background: #5849c4; }
-        #resultado-box {
+        .btn-spin:hover {
+            box-shadow: 0 5px 20px rgba(0,229,255,0.4);
+        }
+        .btn-spin:active { transform: scale(0.97); }
+        .btn-spin:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+
+        #final-result {
             margin-top: 20px;
-            padding: 15px;
-            min-height: 40px;
-            border-radius: 8px;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f9f9f9;
+            color: #00e676;
+            min-height: 30px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
-        .animar {
-            animation: pulse 0.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
-        }
+        #final-result.show { opacity: 1; }
+
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>🎰 Sorteo Aleatorio</h2>
-    <textarea id="inputOpciones">Show Miki sol
-Show Cristian C
-Masaje de pies
-Baile
-Presentación de Jeff cavalier</textarea>
+<div class="main-container">
+    <h2>🎡 Rueda de la Fortuna</h2>
     
-    <button class="btn-sorteo" onclick="lanzarSorteo()">¡PROBAR SUERTE!</button>
+    <div id="wheel-wrapper">
+        <svg viewBox="0 0 320 320" width="320" height="320">
+            <defs>
+                <filter id="neon-glow">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <circle cx="160" cy="160" r="150" fill="#2a2e3d" stroke="#3a4055" stroke-width="5" />
+
+            <g id="options-group"></g>
+
+            <polygon id="center-pointer" points="160,130 170,160 160,190 150,160" transform="rotate(-90 160 160)" />
+            <circle cx="160" cy="160" r="8" fill="#fff" />
+        </svg>
+    </div>
     
-    <div id="resultado-box">Esperando...</div>
+    <button class="btn-spin" id="spinBtn" onclick="iniciarSorteo()">¡Girar Rueda!</button>
+    
+    <div id="final-result"></div>
 </div>
 
 <script>
-    function lanzarSorteo() {
-        const area = document.getElementById('inputOpciones');
-        const res = document.getElementById('resultado-box');
-        const lista = area.value.split('\n').map(item => item.trim()).filter(item => item !== "");
+    // Paleta de colores Cool para la iluminación rápida
+    const coolColors = ["#00e5ff", "#00bcd4", "#18ffff", "#00e676", "#6c5ce7", "#8e44ad"];
+    
+    // Tus opciones
+    const opciones = [
+        "1. Show Miki sol",
+        "2. Show Cristian C",
+        "3. Masaje de pies",
+        "4. Baile",
+        "5. Pres. Jeff Cavalier" // Texto acortado para el diseño
+    ];
 
-        if (lista.length === 0) {
-            res.innerHTML = "❌ Escribe algo";
-            res.style.color = "#ff7675";
-            return;
+    const totalOptions = opciones.length;
+    const center = 160; // Centro del SVG 320x320
+    const radius = 120; // Radio donde se colocan las opciones
+    const optionsGroup = document.getElementById('options-group');
+    const resultDiv = document.getElementById('final-result');
+    const spinBtn = document.getElementById('spinBtn');
+
+    // --- Dibujar la rueda inicial ---
+    function drawWheel() {
+        for (let i = 0; i < totalOptions; i++) {
+            // Calcular ángulo para cada opción (distribución uniforme)
+            const angle = (i * 360 / totalOptions) - 90; // Empezar arriba (-90deg)
+            const radians = (angle * Math.PI) / 180;
+            
+            // Posición X, Y del círculo de la opción
+            const x = center + radius * Math.cos(radians);
+            const y = center + radius * Math.sin(radians);
+
+            // Crear Círculo (Luz)
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", "25"); // Tamaño de la "bombilla"
+            circle.setAttribute("class", "option-circle");
+            circle.setAttribute("id", `opt-light-${i}`);
+            optionsGroup.appendChild(circle);
+
+            // Crear Texto
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y + 5); // Pequeño ajuste vertical
+            text.setAttribute("class", "option-text");
+            
+            // Dividir texto largo en líneas si es necesario
+            const words = opciones[i].split(' ');
+            if (words.length > 2) {
+                const tspan1 = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                tspan1.textContent = words.slice(0, 2).join(' ');
+                tspan1.setAttribute("x", x);
+                tspan1.setAttribute("dy", "-0.2em");
+                
+                const tspan2 = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+                tspan2.textContent = words.slice(2).join(' ');
+                tspan2.setAttribute("x", x);
+                tspan2.setAttribute("dy", "1.2em");
+                
+                text.appendChild(tspan1);
+                text.appendChild(tspan2);
+            } else {
+                text.textContent = opciones[i];
+            }
+            optionsGroup.appendChild(text);
+        }
+    }
+
+    drawWheel(); // Llamada inicial
+
+    // --- Lógica del Sorteo y Animación ---
+    function iniciarSorteo() {
+        // Resetear estado anterior
+        resultDiv.classList.remove('show');
+        resultDiv.innerHTML = "";
+        spinBtn.disabled = true;
+        
+        // Limpiar luces ganadoras anteriores
+        document.querySelectorAll('.option-circle').forEach(el => {
+            el.classList.remove('winner-light', 'illuminated');
+            el.style.filter = '';
+        });
+
+        const numVueltasRapidas = 4; // Cuántas vueltas completas de luces
+        const indexGanador = Math.floor(Math.random() * totalOptions);
+        const pasosTotales = (numVueltasRapidas * totalOptions) + indexGanador;
+        
+        let pasoActual = 0;
+        let velocidad = 50; // Milisegundos entre luces (Muy rápido inicial)
+
+        // Función de animación secuencial (Luz rápida)
+        function animarPaso() {
+            // Apagar la luz anterior
+            const prevIndex = (pasoActual - 1) % totalOptions;
+            if (prevIndex >= 0) {
+                const prevLight = document.getElementById(`opt-light-${prevIndex}`);
+                prevLight.classList.remove('illuminated');
+                prevLight.style.filter = '';
+            }
+
+            // Iluminar la luz actual con color Cool aleatorio
+            const currentIndex = pasoActual % totalOptions;
+            const currentLight = document.getElementById(`opt-light-${currentIndex}`);
+            currentLight.classList.add('illuminated');
+            
+            // Aplicar color cool aleatorio durante el giro
+            const randomCoolColor = coolColors[Math.floor(Math.random() * coolColors.length)];
+            currentLight.style.fill = randomCoolColor;
+            currentLight.style.filter = 'url(#neon-glow)';
+
+            pasoActual++;
+
+            if (pasoActual <= pasosTotales) {
+                // Desacelerar ligeramente al final
+                if (pasoActual > pasosTotales - totalOptions) {
+                    velocidad += 20; 
+                }
+                setTimeout(animarPaso, velocidad);
+            } else {
+                // --- FINAL DE LA ANIMACIÓN ---
+                // Fijar Ganador
+                currentLight.classList.remove('illuminated');
+                currentLight.classList.add('winner-light'); // Cambiar a color verde éxito fijo
+                currentLight.style.fill = '#00e676';
+                
+                // Mostrar texto del resultado
+                setTimeout(() => {
+                    resultDiv.innerHTML = "🏆 GANADOR: " + opciones[currentIndex] + " 🏆";
+                    resultDiv.classList.add('show');
+                    spinBtn.disabled = false;
+                }, 300);
+            }
         }
 
-        // Animación de carga
-        res.innerHTML = "Eligiendo...";
-        res.style.color = "#6c5ce7";
-        res.classList.add('animar');
-
-        setTimeout(() => {
-            const ganador = lista[Math.floor(Math.random() * lista.length)];
-            res.classList.remove('animar');
-            res.style.color = "#00b894";
-            res.innerHTML = "✨ " + ganador + " ✨";
-        }, 800);
+        animarPaso(); // Iniciar animación
     }
 </script>
 
